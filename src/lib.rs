@@ -113,8 +113,8 @@ use std::{
 
 use crate::binding::{
     CloseHandle, CreateProcessW, GetExitCodeProcess, TerminateProcess, WaitForSingleObject, BOOL,
-    DWORD, INFINITE, PCWSTR, PDWORD, PROCESS_INFORMATION, PWSTR, STARTUPINFOW, STATUS_PENDING,
-    UINT, WAIT_OBJECT_0,
+    DWORD, INFINITE, PCWSTR, PDWORD, PROCESS_INFORMATION, PWSTR, SECURITY_ATTRIBUTES, STARTUPINFOW,
+    STATUS_PENDING, UINT, WAIT_OBJECT_0,
 };
 
 /// A process builder, providing control over how a new process should be
@@ -129,7 +129,7 @@ pub struct Command {
 impl Command {
     /// Create a new [`Command`], with the following default configuration:
     ///
-    /// * Inherit handles of the calling process.
+    /// * Do not Inherit handles of the calling process.
     /// * Inherit the current drive and directory of the calling process.
     ///
     /// Builder methods are provided to change these defaults and otherwise
@@ -157,12 +157,16 @@ impl Command {
         }
     }
 
-    /// Enable/disable handles inherance.
+    /// Enable/disable handle inheritance.
     ///
-    /// If this parameter is `true`, each inheritable handle in the calling
-    /// process is inherited by the new process. If the parameter is `false`,
-    /// the handles are not inherited. Note that inherited handles have the
-    /// same value and access rights as the original handles.
+    /// When `true`, two things happen:
+    /// 1. Each inheritable handle in the calling process is inherited by the
+    ///    new process (maps to `bInheritHandles`).
+    /// 2. The process and thread handles returned in [`Child`] are themselves
+    ///    marked as inheritable, so *future* child processes can inherit them
+    ///    too (maps to `bInheritHandle` on `lpProcessAttributes` / `lpThreadAttributes`).
+    ///
+    /// When `false`, neither happens.
     ///
     /// Equivalent to the `bInheritHandles` parameter of the
     /// [`CreateProcessW`][create-process-w-parameters] function.
@@ -292,6 +296,18 @@ impl Child {
 
         let process_creation_flags = 0 as DWORD;
 
+        // Skip allocation when `inherit_handles` is false.
+        let mut security_attributes;
+        let (lp_process_attributes, lp_thread_attributes) = if inherit_handles {
+            security_attributes = SECURITY_ATTRIBUTES::new(true);
+            (
+                &mut security_attributes as *mut SECURITY_ATTRIBUTES,
+                &mut security_attributes as *mut SECURITY_ATTRIBUTES,
+            )
+        } else {
+            (null_mut(), null_mut())
+        };
+
         let current_directory_ptr = current_directory
             .map(|path| {
                 let wide_path: Vec<u16> = path.as_os_str().encode_wide().chain(once(0)).collect();
@@ -307,8 +323,8 @@ impl Child {
             CreateProcessW(
                 null(),
                 command.as_ptr() as PWSTR,
-                null_mut(),
-                null_mut(),
+                lp_process_attributes,
+                lp_thread_attributes,
                 inherit_handles as BOOL,
                 process_creation_flags as DWORD,
                 null_mut(),
@@ -531,5 +547,60 @@ impl fmt::Display for ExitStatus {
     /// Formats the value using the given formatter.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::binding::{GetHandleInformation, HANDLE_FLAG_INHERIT};
+    use std::ffi::c_void;
+
+    /// Returns true if the handle has HANDLE_FLAG_INHERIT set.
+    unsafe fn is_inheritable(handle: *mut c_void) -> bool {
+        let mut flags: DWORD = 0;
+        let ok = GetHandleInformation(handle, &mut flags) != 0;
+        assert!(ok, "GetHandleInformation failed");
+        (flags & HANDLE_FLAG_INHERIT) != 0
+    }
+
+    #[test]
+    fn default_spawn_does_not_give_inheritable_handles() {
+        let child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
+        let hproc = child.process_information.hProcess;
+        let hthread = child.process_information.hThread;
+        // Check flags before waiting, since wait() closes the handles.
+        let proc_inheritable = unsafe { is_inheritable(hproc) };
+        let thread_inheritable = unsafe { is_inheritable(hthread) };
+        child.wait().unwrap();
+        assert!(
+            !proc_inheritable,
+            "process handle should NOT be inheritable by default"
+        );
+        assert!(
+            !thread_inheritable,
+            "thread handle should NOT be inheritable by default"
+        );
+    }
+
+    #[test]
+    fn inherit_handles_true_gives_inheritable_handles() {
+        let child = Command::new("cmd.exe /c exit 0")
+            .inherit_handles(true)
+            .spawn()
+            .unwrap();
+        let hproc = child.process_information.hProcess;
+        let hthread = child.process_information.hThread;
+        let proc_inheritable = unsafe { is_inheritable(hproc) };
+        let thread_inheritable = unsafe { is_inheritable(hthread) };
+        child.wait().unwrap();
+        assert!(
+            proc_inheritable,
+            "process handle should be inheritable when inherit_handles(true)"
+        );
+        assert!(
+            thread_inheritable,
+            "thread handle should be inheritable when inherit_handles(true)"
+        );
     }
 }
