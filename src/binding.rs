@@ -1,52 +1,172 @@
-#![allow(clippy::upper_case_acronyms, non_snake_case, non_camel_case_types)]
-
+#![allow(clippy::upper_case_acronyms, non_snake_case, non_camel_case_types, unused_doc_comments)]
 use std::{ffi::c_void, mem::size_of, ptr::null_mut};
 
-// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#parameters
+/// Common Windows API constant used with `WaitForSingleObject`.
+///
+/// This value instructs the function to wait indefinitely for the provided handle
+/// to become signaled.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#parameters
 pub(crate) const INFINITE: u32 = 0xFFFFFFFF;
-// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#return-value
+
+/// Constant indicating the wait completed because the handle was signaled.
+///
+/// When `WaitForSingleObject` returns, `WAIT_OBJECT_0` represents a successful
+/// wait on the specified handle.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#return-value
 pub(crate) const WAIT_OBJECT_0: u32 = 0x00000000;
-// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess#remarks
+
+/// Status code indicating that a process is still pending (i.e., not terminated yet).
+///
+/// This is commonly returned from `GetExitCodeProcess` until the process finishes.
+/// When the exit code equals `STATUS_PENDING`, the process has not exited.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
 pub(crate) const STATUS_PENDING: u32 = 0x00000103;
-// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+
+/// Process creation flag that tells Windows to use the environment block from
+/// the current Unicode environment.
+///
+/// This is a bitmask used with `CreateProcessW`'s `dwCreationFlags`.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess#remarks
+/// and:
+/// https://learn.microsoft.com/en-us/windows/win32/api/procthread/process-creation-flags
 pub(crate) const CREATE_UNICODE_ENVIRONMENT: DWORD = 0x00000400;
-// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-gethandleinformation#parameters
+
+/// Handle inheritance flag used in tests.
+///
+/// When enabled, Windows will allow child processes created by the current
+/// process to inherit handles marked as inheritable.
+///
+/// Note: this constant is only compiled for tests.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-gethandleinformation#parameters
 #[cfg(test)]
 pub(crate) const HANDLE_FLAG_INHERIT: u32 = 0x00000001;
 
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#BOOL
+/// Windows `BOOL` type.
+///
+/// In the Windows API, `BOOL` is a 32-bit signed integer used as a boolean:
+/// `0` represents `FALSE`, and non-zero represents `TRUE`.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#BOOL
 pub(crate) type BOOL = i32;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#DWORD
+
+/// Windows `DWORD` type.
+///
+/// `DWORD` is a 32-bit unsigned integer commonly used for counts, timeouts,
+/// flags, and process/thread identifiers.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#DWORD
 pub(crate) type DWORD = u32;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PCWSTR
+
+/// Windows `PCWSTR` type (pointer to constant wide string).
+///
+/// `PCWSTR` is a raw pointer to UTF-16 code units (wide string) that the
+/// called Windows function does not modify.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PCWSTR
 pub(crate) type PCWSTR = *const u16;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PDWORD
+
+/// Windows `PDWORD` type (pointer to DWORD).
+///
+/// `PDWORD` points to a `DWORD` value that the called Windows function writes to.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PDWORD
 pub(crate) type PDWORD = *mut u32;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PVOID
+
+/// Windows `PVOID` type (generic pointer).
+///
+/// This is an opaque pointer (`void*` in C terms).
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PVOID
 type PVOID = *mut c_void;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PWSTR
+
+/// Windows `PWSTR` type (pointer to writable wide string).
+///
+/// `PWSTR` is a raw pointer to UTF-16 code units (wide string) that the called
+/// Windows function may modify.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PWSTR
 pub(crate) type PWSTR = *mut u16;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#UINT
+
+/// Windows `UINT` type.
+///
+/// `UINT` is a 32-bit unsigned integer commonly used for exit codes, flags, and other parameters.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#UINT
 pub(crate) type UINT = u32;
 
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#HANDLE
+/// Windows `HANDLE` type.
+///
+/// `HANDLE` is an opaque pointer-like value used by the Windows API to refer to kernel objects
+/// (processes, threads, events, mutexes, files, etc.).
+///
+/// In this crate it is represented as a raw pointer.
 type HANDLE = *mut c_void;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PBYTE
+
+/// Windows `PBYTE` type (pointer to BYTE).
+///
+/// `PBYTE` is a pointer to a sequence of bytes (unsigned 8-bit values).
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PBYTE
 type PBYTE = *mut u8;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
+
+/// Windows `WORD` type.
+///
+/// `WORD` is a 16-bit unsigned integer used for smaller fields within Windows structs.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
 type WORD = u16;
 
-// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
+/// Windows `PROCESS_INFORMATION` structure.
+///
+/// This structure is filled in by `CreateProcessW` and provides information
+/// about the newly created process and its primary thread.
+///
+/// Fields:
+/// - `hProcess`: Handle to the newly created process.
+/// - `hThread`: Handle to the primary thread of the newly created process.
+/// - `dwProcessId`: Process identifier (PID).
+/// - `dwThreadId`: Thread identifier (TID).
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
 #[repr(C)]
 #[derive(Debug)]
 pub(crate) struct PROCESS_INFORMATION {
+    /// Handle to the newly created process.
     pub hProcess: HANDLE,
+    /// Handle to the primary thread of the newly created process.
     pub hThread: HANDLE,
+    /// Process identifier (PID).
     pub dwProcessId: DWORD,
+    /// Thread identifier (TID).
     dwThreadId: DWORD,
 }
 
 impl Default for PROCESS_INFORMATION {
+    /// Creates a zero/NULL-initialized `PROCESS_INFORMATION`.
+    ///
+    /// This is useful as a starting point before calling `CreateProcessW`.
+    /// After `CreateProcessW` returns successfully, the relevant fields will be
+    /// overwritten by Windows.
     fn default() -> Self {
         Self {
             hProcess: null_mut(),
@@ -57,7 +177,19 @@ impl Default for PROCESS_INFORMATION {
     }
 }
 
-// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
+/// Windows `SECURITY_ATTRIBUTES` structure.
+///
+/// This structure controls security-related attributes for objects created
+/// by functions that accept security attribute parameters (e.g., `CreateProcessW`).
+///
+/// Fields:
+/// - `nLength`: Size of the structure in bytes.
+/// - `lpSecurityDescriptor`: Optional pointer to a security descriptor; `NULL` usually means
+///   "use default security".
+/// - `bInheritHandle`: Whether created handles should be inheritable by child processes.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
 #[repr(C)]
 pub(crate) struct SECURITY_ATTRIBUTES {
     nLength: DWORD,
@@ -66,6 +198,16 @@ pub(crate) struct SECURITY_ATTRIBUTES {
 }
 
 impl SECURITY_ATTRIBUTES {
+    /// Creates a `SECURITY_ATTRIBUTES` with configurable handle inheritance.
+    ///
+    /// # Parameters
+    /// - `inherit_handles`: If `true`, sets `bInheritHandle` to a non-zero `BOOL` value,
+    ///   allowing the created handles to be inheritable by child processes.
+    ///   If `false`, sets it to `0`.
+    ///
+    /// # Notes
+    /// - `lpSecurityDescriptor` is set to `NULL`.
+    /// - `nLength` is set to the size of `SECURITY_ATTRIBUTES` as required by Windows.
     pub(crate) fn new(inherit_handles: bool) -> Self {
         Self {
             nLength: size_of::<SECURITY_ATTRIBUTES>() as DWORD,
@@ -75,30 +217,63 @@ impl SECURITY_ATTRIBUTES {
     }
 }
 
-// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
+/// Windows `STARTUPINFOW` structure.
+///
+/// This structure provides information about how to start a new process,
+/// including window settings and standard handle redirection.
+///
+/// Only some fields are typically needed; the rest can be left as zero/NULL.
+/// This crate provides a `Default` implementation to initialize all fields
+/// to safe "not set" values.
+///
+/// See:
+/// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
 #[repr(C)]
 pub(crate) struct STARTUPINFOW {
+    /// Size of the structure, in bytes.
     pub cb: DWORD,
+    /// Reserved; should typically be `NULL`.
     lpReserved: PWSTR,
+    /// Optional name of the desktop for the new process; `NULL` uses default.
     lpDesktop: PWSTR,
+    /// Optional title for the new process; `NULL` leaves it unset.
     lpTitle: PWSTR,
+    /// X coordinate of the window position.
     dwX: DWORD,
+    /// Y coordinate of the window position.
     dwY: DWORD,
+    /// X size of the window.
     dwXSize: DWORD,
+    /// Y size of the window.
     dwYSize: DWORD,
+    /// Number of character columns in the window buffer.
     dwXCountChars: DWORD,
+    /// Number of character rows in the window buffer.
     dwYCountChars: DWORD,
+    /// Fill attribute for the window (e.g., text/background attributes).
     dwFillAttribute: DWORD,
+    /// Flags specifying which members contain valid data.
     dwFlags: DWORD,
+    /// How the window is shown (e.g., normal/minimized).
     wShowWindow: WORD,
+    /// Reserved; should typically be `0` or `NULL`-like values.
     cbReserved2: WORD,
+    /// Reserved; should typically be `NULL`.
     lpReserved2: PBYTE,
+    /// Handle for standard input redirection.
     hStdInput: HANDLE,
+    /// Handle for standard output redirection.
     hStdOutput: HANDLE,
+    /// Handle for standard error redirection.
     hStdError: HANDLE,
 }
 
 impl Default for STARTUPINFOW {
+    /// Creates a `STARTUPINFOW` with all fields zero/NULL-initialized, except `cb`.
+    ///
+    /// # Why `cb` is set
+    /// Many Windows structs require their `cb` field to be set to `size_of::<Self>()`
+    /// before calling Windows API functions.
     fn default() -> Self {
         Self {
             cb: size_of::<STARTUPINFOW>() as DWORD,
@@ -123,10 +298,55 @@ impl Default for STARTUPINFOW {
     }
 }
 
+/// Windows FFI bindings to process/thread management functions.
+///
+/// These functions are declared with `extern "system"` to match the Windows calling convention.
+/// They are intended to be used by higher-level wrapper code in the crate.
+///
+/// # Safety
+/// Each function here is `unsafe` to call from Rust because they interface with FFI:
+/// - arguments must be valid pointers where required,
+/// - structures must have correct layout (`#[repr(C)]`),
+/// - buffers/strings must live long enough and be valid for the duration of the call.
+/// The wrapper code in the crate should ensure these invariants.
+///
+/// See:
+/// Individual function documentation links are embedded inline below.
 extern "system" {
-    // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+    /// Closes an open handle to a Windows object.
+    ///
+    /// This decrements the reference count for the underlying handle-managed resource.
+    ///
+    /// # Parameters
+    /// - `hObject`: Handle to close.
+    ///
+    /// # Returns
+    /// Returns non-zero (`TRUE`) on success, and zero (`FALSE`) on failure.
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
     pub(crate) fn CloseHandle(hObject: HANDLE) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+
+    /// Creates a new process.
+    ///
+    /// This is the core API used to start a child process given a command line and startup info.
+    ///
+    /// # Parameters (high-level meaning)
+    /// - `lpApplicationName`: Optional executable path; can be `NULL` if `lpCommandLine` contains it.
+    /// - `lpCommandLine`: The command line to execute (mutable pointer in Windows API).
+    /// - `lpProcessAttributes` / `lpThreadAttributes`: Optional security attributes.
+    /// - `bInheritHandles`: Whether handles are inheritable in the child process.
+    /// - `dwCreationFlags`: Process creation options.
+    /// - `lpEnvironment`: Optional environment block; can be `NULL` to inherit the parent's environment.
+    /// - `lpCurrentDirectory`: Optional working directory; can be `NULL`.
+    /// - `lpStartupInfo`: Startup configuration (e.g., stdio handles, window settings).
+    /// - `lpProcessInformation`: Receives process/thread handles and IDs.
+    ///
+    /// # Returns
+    /// Returns non-zero (`TRUE`) on success, and zero (`FALSE`) on failure.
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
     pub(crate) fn CreateProcessW(
         lpApplicationName: PCWSTR,
         lpCommandLine: PWSTR,
@@ -139,13 +359,65 @@ extern "system" {
         lpStartupInfo: *const STARTUPINFOW,
         lpProcessInformation: *mut PROCESS_INFORMATION,
     ) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
+
+    /// Retrieves the exit code of a process.
+    ///
+    /// If the process is still running, the exit code is `STATUS_PENDING`.
+    /// Otherwise, the exit code returned is the process' termination code.
+    ///
+    /// # Parameters
+    /// - `hProcess`: Handle to the process.
+    /// - `lpExitCode`: Output pointer to receive the exit code.
+    ///
+    /// # Returns
+    /// Returns non-zero (`TRUE`) on success, and zero (`FALSE`) on failure.
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
     pub(crate) fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
+
+    /// Terminates (kills) a process.
+    ///
+    /// # Parameters
+    /// - `hProcess`: Handle to the process to terminate.
+    /// - `uExitCode`: Exit code to report to the process' parent/observers.
+    ///
+    /// # Returns
+    /// Returns non-zero (`TRUE`) on success, and zero (`FALSE`) on failure.
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
     pub(crate) fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+
+    /// Waits until the specified object is in a signaled state or a timeout occurs.
+    ///
+    /// This is commonly used to wait for a process handle to become signaled
+    /// (i.e., for the process to exit).
+    ///
+    /// # Parameters
+    /// - `hHandle`: Handle to wait on (commonly a process handle).
+    /// - `dwMilliseconds`: Timeout in milliseconds. Use `INFINITE` to wait forever.
+    ///
+    /// # Returns
+    /// Returns one of the documented wait result constants (e.g., `WAIT_OBJECT_0`).
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
     pub(crate) fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
-    // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-gethandleinformation
+
+    /// Retrieves information about a handle.
+    ///
+    /// This is used in tests (compiled only under `cfg(test)` in this crate).
+    ///
+    /// # Parameters
+    /// - `hObject`: Handle to query.
+    /// - `lpdwFlags`: Output pointer receiving flags describing the handle.
+    ///
+    /// # Returns
+    /// Returns non-zero (`TRUE`) on success, and zero (`FALSE`) on failure.
+    ///
+    /// See:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-gethandleinformation
     #[cfg(test)]
     pub(crate) fn GetHandleInformation(hObject: HANDLE, lpdwFlags: PDWORD) -> BOOL;
 }
