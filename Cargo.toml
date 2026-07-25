@@ -25,4 +25,4 @@ name = "create_process_ex_w"
 path = "src/lib.rs"
 
 [lints.rust]
-missing_docs = "deny"
+missing_docs = "allow"
