@@ -19,7 +19,7 @@ fn status_try_wait_eventually_returns_some() {
 
 #[test]
 fn status_wait_returns_exit_code() {
-    let mut child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
+    let child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
     let status = child.wait().unwrap();
     assert!(status.success());
 }
