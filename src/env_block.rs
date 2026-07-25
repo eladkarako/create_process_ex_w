@@ -1,6 +1,6 @@
-use std::{env, ffi::OsStr, ffi::OsString};
+use std::{env, ffi::OsStr, ffi::OsString, os::windows::ffi::OsStrExt};
 
-fn ascii_lower_wide(s: &OsStr) -> impl Iterator<Item = u16> + '_ {
+fn ascii_lower_wide(s: &OsStr) -> impl Iterator<Item=u16> + '_ {
     s.encode_wide().map(|c| {
         if (b'A' as u16..=b'Z' as u16).contains(&c) {
             c + 32
