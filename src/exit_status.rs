@@ -1,7 +1,7 @@
 use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ExitStatus(u32);
+pub struct ExitStatus(pub u32);
 
 impl ExitStatus {
     pub fn success(&self) -> bool {
