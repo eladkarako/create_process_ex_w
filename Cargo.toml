@@ -1,16 +1,16 @@
 [package]
-name = "CreateProcessW"
+name = "create_process_ex_w"
 version = "0.1.8"
 edition = "2021"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 description = "Create and handle processes on Windows using the Win32 API"
-repository = "https://github.com/yozhgoor/CreateProcessW"
-homepage = "https://github.com/yozhgoor/CreateProcessW"
+repository = "https://github.com/eladkarako/create_process_ex_w"
+homepage = "https://github.com/eladkarako/create_process_ex_w"
 documentation = "https://docs.rs/CreateProcessW"
 readme = "README.md"
 keywords = ["winapi", "process", "command", "CreateProcessExW"]
 categories = ["api-bindings", "os::windows-apis"]
-include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
+include = ["src/**/*.rs", "README.md", "LICENSE.MIT"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,3 +19,10 @@ include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
 targets = ["x86_64-pc-windows-msvc"]
+
+[lib]
+name = "create_process_ex_w"
+path = "src/lib.rs"
+
+[lints.rust]
+missing_docs = "deny"
