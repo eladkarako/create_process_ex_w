@@ -1,8 +1,7 @@
 use std::{
-    env,
     ffi::{OsStr, OsString},
     io::Error,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use crate::{child::Child, exit_status::ExitStatus};
@@ -51,7 +50,7 @@ impl Command {
 
     pub fn envs<I, K, V>(&mut self, vars: I) -> &mut Self
     where
-        I: IntoIterator<Item = (K, V)>,
+        I: IntoIterator<Item=(K, V)>,
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
