@@ -66,9 +66,10 @@ impl Child {
         current_directory: Option<&Path>,
         env_clear: bool,
         env_vars: Vec<(OsString, Option<OsString>)>,
+        mut startup_information: STARTUPINFOW,
     ) -> Result<Self, Error> {
         // Initialize the Windows structs with default "not set" values.
-        let mut startup_information = STARTUPINFOW::default();
+        //let mut startup_information = STARTUPINFOW::default(); //removed, command.rs now allow setting of show window flag which effects .dwFlags |= STARTF_USESHOWWINDOW and .wShowWindow (to whatever input used), only need to remember to use -   startup_information.cb = size_of::<STARTUPINFOW>() as u32;
         let mut process_information = PROCESS_INFORMATION::default();
 
         // Windows expects the caller to fill `cb` with the size of the struct.
