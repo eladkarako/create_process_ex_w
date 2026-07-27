@@ -20,3 +20,11 @@ todo (adding functionality):
 - privilege run. implicit admin, credentials.
 
 <hr/>
+
+build + documentation + open documentation:  
+
+```rust
+cargo build
+cargo doc
+cargo doc --open
+```
