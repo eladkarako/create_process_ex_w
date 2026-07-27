@@ -26,7 +26,6 @@ use crate::{child::Child, exit_status::ExitStatus};
 ///     .unwrap();
 /// println!("Process exited: {}", status.0);
 /// ```
-#[derive(Debug)]
 pub struct Command {
     /// The wide command line / executable invocation passed to Windows.
     ///
