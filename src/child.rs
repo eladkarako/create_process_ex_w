@@ -26,7 +26,6 @@ use crate::exit_status::ExitStatus;
 /// - `id`: return the process ID (PID)
 ///
 /// This type is specific to Windows because it relies on Windows APIs and FFI bindings.
-#[derive(Debug)]
 pub struct Child {
     /// Raw `PROCESS_INFORMATION` filled by `CreateProcessW`.
     ///
