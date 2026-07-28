@@ -11,6 +11,7 @@ mod child;
 mod env_block;
 mod exit_status;
 
+pub use binding::ShowWindowCommand;
 // Re-export the public types so users can access them directly from the crate root.
 pub use child::Child;
 pub use command::Command;
