@@ -51,6 +51,7 @@ impl Child {
     ///   - key/value pair where
     ///   - the value may be `None` to indicate removal/unsetting (again implemented
     ///   in `build_env_block`).
+    /// - `mut startup_information`: The `STARTUPINFOW` passed to `CreateProcessW`.
     ///
     /// # Returns
     /// - `Ok(Child)` if `CreateProcessW` succeeds.
