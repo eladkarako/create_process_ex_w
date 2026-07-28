@@ -1,4 +1,9 @@
-#![allow(clippy::upper_case_acronyms, non_snake_case, non_camel_case_types, unused_doc_comments)]
+#![allow(
+    clippy::upper_case_acronyms,
+    non_snake_case,
+    non_camel_case_types,
+    unused_doc_comments
+)]
 use std::{ffi::c_void, mem::size_of, ptr::null_mut};
 
 /// Common Windows API constant used with `WaitForSingleObject`.
