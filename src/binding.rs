@@ -140,6 +140,95 @@ type PBYTE = *mut u8;
 /// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
 pub(crate) type WORD = u16;
 
+/// Bitmask type for `STARTUPINFOW.dwFlags`.
+pub(crate) type STARTUPINFOW_FLAGS = DWORD;
+
+/// When set in `STARTUPINFOW.dwFlags`, Windows uses `STARTUPINFOW.wShowWindow`
+/// to determine how the created process's primary window should be shown.
+pub(crate) const STARTF_USESHOWWINDOW: STARTUPINFOW_FLAGS = 0x00000001;
+
+/// Value to place into `STARTUPINFOW.wShowWindow` when creating a new process.
+///
+/// Windows uses this to decide how the primary window of the created process
+/// should be shown (minimized, maximized, restored, hidden, etc.).
+///
+/// This is represented as a raw `u16` because `wShowWindow` in `STARTUPINFOW` is
+/// defined as an integer value, and multiple named constants may map to the same
+/// underlying numeric value (e.g. `SW_NORMAL` and `SW_SHOWNORMAL` are both `1`).
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ShowWindowCommand(pub(crate) u16);
+
+impl ShowWindowCommand {
+    /// Hides the window and activates another window.
+    pub const SW_HIDE: Self = Self(0);
+
+    /// Activates and displays a window.
+    ///
+    /// If the window is minimized, maximized, or arranged, the system restores it to its
+    /// original size and position. An application should specify this flag when displaying
+    /// the window for the first time.
+    pub const SW_SHOWNORMAL: Self = Self(1);
+
+    /// Alias for `SW_SHOWNORMAL`.
+    ///
+    /// Same numeric value: 1.
+    pub const SW_NORMAL: Self = Self(1);
+
+    /// Activates the window and displays it as a minimized window.
+    pub const SW_SHOWMINIMIZED: Self = Self(2);
+
+    /// Activates the window and displays it as a maximized window.
+    pub const SW_SHOWMAXIMIZED: Self = Self(3);
+
+    /// Alias for `SW_SHOWMAXIMIZED`.
+    ///
+    /// Same numeric value: 3.
+    pub const SW_MAXIMIZE: Self = Self(3);
+
+    /// Displays a window in its most recent size and position.
+    ///
+    /// This value is similar to `SW_SHOWNORMAL`, except that the window is not activated.
+    pub const SW_SHOWNOACTIVATE: Self = Self(4);
+
+    /// Activates and displays the window in its current size and position.
+    pub const SW_SHOW: Self = Self(5);
+
+    /// Minimizes the specified window and activates the next top-level window in the Z order.
+    pub const SW_MINIMIZE: Self = Self(6);
+
+    /// Displays the window as a minimized window.
+    ///
+    /// This value is similar to `SW_SHOWMINIMIZED`, except the window is not activated.
+    pub const SW_SHOWMINNOACTIVE: Self = Self(7);
+
+    /// Displays the window in its current size and position.
+    ///
+    /// This value is similar to `SW_SHOW`, except that the window is not activated.
+    pub const SW_SHOWNA: Self = Self(8);
+
+    /// Activates and displays the window.
+    ///
+    /// If the window is minimized, maximized, or arranged, the system restores it to its
+    /// original size and position. An application should specify this flag when restoring a
+    /// minimized window.
+    pub const SW_RESTORE: Self = Self(9);
+
+    /// Sets the show state based on the `SW_` value specified in the `STARTUPINFO` structure
+    /// passed to `CreateProcess` by the program that started the application.
+    pub const SW_SHOWDEFAULT: Self = Self(10);
+
+    /// Minimizes a window even if the thread that owns the window is not responding.
+    ///
+    /// This flag should only be used when minimizing windows from a different thread.
+    pub const SW_FORCEMINIMIZE: Self = Self(11);
+
+    #[inline]
+    pub fn as_u16(self) -> u16 {
+        self.0
+    }
+}
+
 /// Windows `PROCESS_INFORMATION` structure.
 ///
 /// This structure is filled in by `CreateProcessW` and provides information
@@ -258,9 +347,9 @@ pub(crate) struct STARTUPINFOW {
     /// Fill attribute for the window (e.g., text/background attributes).
     dwFillAttribute: DWORD,
     /// Flags specifying which members contain valid data.
-    dwFlags: DWORD,
+    pub(crate) dwFlags: DWORD,
     /// How the window is shown (e.g., normal/minimized).
-    wShowWindow: WORD,
+    pub(crate) wShowWindow: WORD,
     /// Reserved; should typically be `0` or `NULL`-like values.
     cbReserved2: WORD,
     /// Reserved; should typically be `NULL`.
