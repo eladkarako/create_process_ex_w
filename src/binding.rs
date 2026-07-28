@@ -154,7 +154,7 @@ type WORD = u16;
 /// See:
 /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
 #[repr(C)]
-#[derive(Debug)]
+
 pub(crate) struct PROCESS_INFORMATION {
     /// Handle to the newly created process.
     pub hProcess: HANDLE,
