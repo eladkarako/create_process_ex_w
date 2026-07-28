@@ -138,7 +138,7 @@ type PBYTE = *mut u8;
 ///
 /// See:
 /// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
-type WORD = u16;
+pub(crate) type WORD = u16;
 
 /// Windows `PROCESS_INFORMATION` structure.
 ///
