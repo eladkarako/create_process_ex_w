@@ -4,7 +4,11 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{child::Child, exit_status::ExitStatus};
+use crate::{
+    binding::{STARTF_USESHOWWINDOW, STARTUPINFOW, WORD},
+    child::Child,
+    exit_status::ExitStatus,
+};
 
 /// Builder for launching a Windows process.
 ///
@@ -48,6 +52,12 @@ pub struct Command {
     /// - `Some(value)` means set/override this variable
     /// - `None` means remove/unset this variable (behavior implemented in `env_block`)
     env_vars: Vec<(OsString, Option<OsString>)>,
+
+    /// STARTUPINFO/STARTUPINFOW configuration used by process creation.
+    ///
+    /// This builder exposes a small subset of functionality (e.g. `set_show_flag`)
+    /// while storing the full struct for internal use.
+    startup_information: STARTUPINFOW,
 }
 
 impl Command {
@@ -59,7 +69,11 @@ impl Command {
     /// # Default configuration
     /// - `inherit_handles`: `false`
     /// - `current_directory`: unset (`None`)
-    /// - environment: inherited/default, unless you call `env_clear`, `env`, `env_remove`, etc.
+    /// - `env_clear`: `false` (environment is inherited/default unless you call [`Command::env_clear`],  `env`, `env_remove`, etc..)
+    /// - `startup_information`: [`STARTUPINFOW::default`]
+    ///
+    /// The stored `command` is kept as an [`OsString`] and later encoded for use with
+    /// Windows `CreateProcessW` when you call [`Command::spawn`] or [`Command::status`].
     pub fn new(command: impl Into<OsString>) -> Self {
         Self {
             command: command.into(),
@@ -67,6 +81,7 @@ impl Command {
             current_directory: None,
             env_clear: false,
             env_vars: Vec::new(),
+            startup_information: STARTUPINFOW::default(),
         }
     }
 
@@ -79,6 +94,18 @@ impl Command {
     /// - `inherit`: If `true`, sets the child process to inherit handles.
     pub fn inherit_handles(&mut self, inherit: bool) -> &mut Self {
         self.inherit_handles = inherit;
+        self
+    }
+
+    /// Sets the `wShowWindow` field via `STARTF_USESHOWWINDOW`.
+    ///
+    /// This is used to request a specific show state for the process's main window.
+    ///
+    /// # Parameters
+    /// - `sw`: Value to store in `STARTUPINFOW.wShowWindow`.
+    pub fn set_show_flag(&mut self, sw: u16) -> &mut Self {
+        self.startup_information.dwFlags |= STARTF_USESHOWWINDOW;
+        self.startup_information.wShowWindow = sw as WORD;
         self
     }
 
@@ -182,6 +209,7 @@ impl Command {
             self.current_directory.as_deref(),
             self.env_clear,
             std::mem::take(&mut self.env_vars),
+            std::mem::take(&mut self.startup_information),
         )
     }
 
