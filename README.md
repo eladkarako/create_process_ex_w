@@ -1,23 +1,30 @@
-this is a fork/clone of https://github.com/yozhgoor/CreateProcessW  
+a fork/clone of https://github.com/yozhgoor/CreateProcessW  
 
-<hr/>
-
-changes in order of less to more significant:  
+Changes:  
 - MIT license.
 - rename crate.
 - adding tests.
 - splitting to multiple files.
+- exposing `SW_*` flags, and supporting initializing `child` process with it.
+- adding verbose rust documentation.
 
-todo (adding functionality):
-- arg/args from array (escape).
-- `SW_` (show flags).
-- time-limit / true/false
-- group root true/false.
-- signal forwarding.
-- exit code normalization fix.
-- timer/stopwatch (not using computer's clock)
+<hr/>
+
+remained TODO:  
+- adding examples and more rust documentation, as well as more tests.  
+
+- support native Windows API for signals, forwarding.  
+- create a child process as process-group-root, which is needed to send a signal to it.  
+
+- improving exit code handling for signals.  
+- support for single and multiple args, in addition to the command-line.  
+
+- timing, a run of child process, until end.
+- time-limit for child-process run.  
+
 - `tee`. mirror `STDOUT` and `STDERR` to file(s).
-- privilege run. implicit admin, credentials.
+
+- privilege run, admin, system NT, implicit/explicit with credentials (plain text).
 
 <hr/>
 
