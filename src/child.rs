@@ -169,6 +169,20 @@ impl Child {
         }
     }
 
+    fn close_handles(&mut self) {
+        unsafe {
+            if !self.process_information.hProcess.is_null() {
+                CloseHandle(self.process_information.hProcess);
+                self.process_information.hProcess = null_mut();
+            }
+
+            if !self.process_information.hThread.is_null() {
+                CloseHandle(self.process_information.hThread);
+                self.process_information.hThread = null_mut();
+            }
+        }
+    }
+
     /// Waits for the child process to exit, then returns its `ExitStatus`.
     ///
     /// # Returns
@@ -185,7 +199,7 @@ impl Child {
     /// This method closes `hProcess` and `hThread` once it successfully obtains the exit
     /// code. If you plan to call other methods afterward, prefer `try_wait` patterns
     /// or avoid further use after a successful `wait`.
-    pub fn wait(&self) -> Result<ExitStatus, Error> {
+    pub fn wait(&mut self) -> Result<ExitStatus, Error> {
         let mut exit_code = 0;
 
         let wait =
@@ -198,11 +212,7 @@ impl Child {
 
             if res != 0 {
                 // Handles are no longer needed once the process is known to have exited.
-                unsafe {
-                    CloseHandle(self.process_information.hProcess);
-                    CloseHandle(self.process_information.hThread);
-                }
-
+                self.close_handles();
                 Ok(ExitStatus(exit_code))
             } else {
                 Err(Error::last_os_error())
@@ -224,7 +234,7 @@ impl Child {
     /// - If the exit code equals `STATUS_PENDING`, the process has not exited yet.
     /// - Otherwise, it treats the returned value as the final exit code and closes the
     ///   process and thread handles.
-    pub fn try_wait(&self) -> Result<Option<ExitStatus>, Error> {
+    pub fn try_wait(&mut self) -> Result<Option<ExitStatus>, Error> {
         let mut exit_code = 0;
 
         let res =
@@ -235,11 +245,7 @@ impl Child {
                 Ok(None)
             } else {
                 // Once we have a final exit code, close handles.
-                unsafe {
-                    CloseHandle(self.process_information.hProcess);
-                    CloseHandle(self.process_information.hThread);
-                }
-
+                self.close_handles();
                 Ok(Some(ExitStatus(exit_code)))
             }
         } else {
@@ -253,5 +259,11 @@ impl Child {
     /// The PID as a `u32`.
     pub fn id(&self) -> u32 {
         self.process_information.dwProcessId
+    }
+}
+
+impl Drop for Child {
+    fn drop(&mut self) {
+        self.close_handles();
     }
 }

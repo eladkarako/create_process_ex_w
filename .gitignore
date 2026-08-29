@@ -1,16 +1,7 @@
-#___________________________ JetBrains RustRover IDE files.
 /.idea/
 
-#___________________________ generated build (deleted with `cargo clean`).
 /target/
 
-#___________________________ generated dependencies (by cargo).
 /Cargo.lock
 
-#___________________________ sometimes I run `type "foo.rs" | rustminify --remove-docs 1>>"minified__foo.rs"` to generate minified files for copy-paste into A.I. agent.
-/src/minified__binding.rs
-/src/minified__child.rs
-/src/minified__command.rs
-/src/minified__env_block.rs
-/src/minified__exit_status.rs
-/src/minified__lib.rs
+/src/minified*.rs

@@ -16,7 +16,7 @@ use crate::Command;
 /// 3) Wait for the child to exit.
 /// 4) Assert the exit code is `0`, proving `PATH` is inherited.
 fn no_env_args_inherits_parent() {
-    let child =
+    let mut child =
         Command::new(r#"cmd.exe /c "if defined PATH (exit 0) else (exit 1)""#)
             .spawn()
             .unwrap();

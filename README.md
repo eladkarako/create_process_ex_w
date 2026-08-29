@@ -7,6 +7,7 @@ Changes:
 - splitting to multiple files.
 - exposing `SW_*` flags, and supporting initializing `child` process with it.
 - adding verbose rust documentation.
+- implementing `drop` (for explicitly closing handles), also used when spawn without wait.
 
 <hr/>
 

@@ -16,7 +16,7 @@ use crate::Command;
 ///    - the exit code is `0`.
 fn status_try_wait_eventually_returns_some() {
     // Quick exit so try_wait should become Some(exit_status) quickly.
-    let child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
+    let mut child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
 
     let mut got = None;
     for _ in 0..200 {
@@ -42,7 +42,7 @@ fn status_try_wait_eventually_returns_some() {
 /// 2) Call `wait()` once, capturing the returned `ExitStatus`.
 /// 3) Assert that `status.success()` is true (i.e., exit code indicates success).
 fn status_wait_returns_exit_code() {
-    let child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
+    let mut child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
     let status = child.wait().unwrap();
     assert!(status.success());
 }

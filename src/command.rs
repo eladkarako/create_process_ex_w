@@ -151,7 +151,7 @@ impl Command {
     /// This method simply calls [`env`](Self::env) for each pair.
     pub fn envs<I, K, V>(&mut self, vars: I) -> &mut Self
     where
-        I: IntoIterator<Item = (K, V)>,
+        I: IntoIterator<Item=(K, V)>,
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {

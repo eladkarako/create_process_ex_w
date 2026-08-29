@@ -30,7 +30,7 @@ unsafe fn is_inheritable(handle: *mut c_void) -> bool {
 /// `lpThreadAttributes` as `NULL` when `inherit_handles` is `false`.
 #[test]
 fn default_spawn_does_not_give_inheritable_handles() {
-    let child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
+    let mut child = Command::new("cmd.exe /c exit 0").spawn().unwrap();
     let hproc = child.process_information.hProcess;
     let hthread = child.process_information.hThread;
 
@@ -59,7 +59,7 @@ fn default_spawn_does_not_give_inheritable_handles() {
 /// `bInheritHandle = TRUE` into both the process- and thread-attributes parameters.
 #[test]
 fn inherit_handles_true_gives_inheritable_handles() {
-    let child = Command::new("cmd.exe /c exit 0")
+    let mut child = Command::new("cmd.exe /c exit 0")
         .inherit_handles(true)
         .spawn()
         .unwrap();

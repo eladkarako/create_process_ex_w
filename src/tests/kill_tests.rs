@@ -52,7 +52,7 @@ unsafe fn is_inheritable(handle: *mut c_void) -> bool {
 fn kill_terminates_process() {
     // A long-running command we can terminate.
     // `ping -n 50` takes some time; if timing differs, kill() still should work.
-    let child = Command::new(r#"cmd.exe /c ping 127.0.0.1 -n 50 >nul"#)
+    let mut child = Command::new(r#"cmd.exe /c ping 127.0.0.1 -n 50 >nul"#)
         .inherit_handles(true)
         .spawn()
         .unwrap();

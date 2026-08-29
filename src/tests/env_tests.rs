@@ -14,7 +14,7 @@ use crate::Command;
 /// This validates the end-to-end contract that `Command::env(...)` results in a
 /// working environment variable in the child created via Windows process creation.
 fn env_var_is_passed_to_child() {
-    let child = Command::new(r#"cmd.exe /c "if "%MY_VAR%"=="hello_test" (exit 0) else (exit 1)""#)
+    let mut child = Command::new(r#"cmd.exe /c "if "%MY_VAR%"=="hello_test" (exit 0) else (exit 1)""#)
         .env("MY_VAR", "hello_test")
         .spawn()
         .unwrap();
@@ -43,7 +43,7 @@ fn env_var_is_passed_to_child() {
 ///    - `PATH` is not present in the child environment, and
 ///    - `CUSTOM` is present with the expected value.
 fn env_clear_with_single_var() {
-    let child = Command::new(
+    let mut child = Command::new(
         r#"cmd.exe /c "if defined PATH (exit 1) else (if "%CUSTOM%"=="value" (exit 0) else (exit 2))""#,
     )
         .env_clear()
@@ -77,7 +77,7 @@ fn env_clear_with_single_var() {
 /// 3) Spawns and waits.
 /// 4) Asserts exit code `0` to confirm the variable is not defined in the child.
 fn env_remove_removes_var() {
-    let child = Command::new("cmd.exe /c \"if defined PATH (exit 1) else (exit 0)\"")
+    let mut child = Command::new("cmd.exe /c \"if defined PATH (exit 1) else (exit 0)\"")
         .env_remove("PATH")
         .spawn()
         .unwrap();
@@ -109,7 +109,7 @@ fn env_remove_removes_var() {
 /// 3) Spawn and wait.
 /// 4) Assert the exit code is `2`, proving the `"second"` value is what the child sees.
 fn last_duplicate_key_wins() {
-    let child = Command::new(
+    let mut child = Command::new(
         r#"cmd.exe /c "if "%MY_VAR%"=="second" (exit 2) else (if "%MY_VAR%"=="first" (exit 0) else (exit 3))""#,
     )
         .env("MY_VAR", "first")
@@ -142,7 +142,7 @@ fn last_duplicate_key_wins() {
 /// 3) Spawn and wait.
 /// 4) Assert exit code `2` to confirm the last value wins despite key casing differences.
 fn last_duplicate_key_wins_case_insensitive() {
-    let child = Command::new(
+    let mut child = Command::new(
         r#"cmd.exe /c "if "%MYVAR%"=="second" (exit 2) else (if "%MYVAR%"=="first" (exit 0) else (exit 3))""#,
     )
         .env("MyVar", "first")
@@ -177,7 +177,7 @@ fn last_duplicate_key_wins_case_insensitive() {
 /// 3) Spawn and wait.
 /// 4) Assert exit code `0`, proving the later `.env(...)` overrides the earlier removal.
 fn env_overrides_earlier_remove() {
-    let child = Command::new(
+    let mut child = Command::new(
         r#"cmd.exe /c "if "%MY_VAR%"=="hello_override" (exit 0) else (exit 1)""#,
     )
         .env_remove("MY_VAR")
@@ -207,7 +207,7 @@ fn env_overrides_earlier_remove() {
 /// 3) Spawn and wait.
 /// 4) Assert exit code `0`, proving the later removal wins.
 fn remove_overrides_earlier_env() {
-    let child = Command::new(r#"cmd.exe /c "if defined MY_VAR (exit 1) else (exit 0)""#)
+    let mut child = Command::new(r#"cmd.exe /c "if defined MY_VAR (exit 1) else (exit 0)""#)
         .env("MY_VAR", "some_value")
         .env_remove("MY_VAR")
         .spawn()
